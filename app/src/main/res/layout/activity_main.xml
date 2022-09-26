@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:background="@color/dark_grey">
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/loading"
+        android:visibility="gone"
+        android:layout_centerInParent="true"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/home_page">
+
+        <pl.droidsonroids.gif.GifImageView
+            android:id="@+id/gif"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/wallpaper_clear_night"
+            android:visibility="visible"
+            android:clickable="true"
+            android:focusableInTouchMode="true" />
+
+        <ImageView
+            android:id="@+id/wallpaper"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:src="@drawable/wallpaper_cloudy"
+            android:clickable="true"
+            android:focusableInTouchMode="true" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/linear_layout"
+            android:weightSum="5"
+            android:orientation="horizontal">
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/press_start"
+                android:layout_margin="10dp"
+                android:id="@+id/specify_city"
+                android:hint="Enter city/location"
+                android:textColorHint="@color/dark_grey"
+                android:layout_weight="5"
+                android:padding="5dp"
+                app:hintTextColor="@color/dark_grey" >
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/edit_city"
+                    android:inputType="text"
+                    android:imeOptions="actionDone"
+                    android:singleLine="true"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:background="#0000ffff"
+                    android:fontFamily="@font/press_start"
+                    />
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/temperature"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/linear_layout"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:fontFamily="@font/press_start"
+            android:gravity="center_horizontal"
+            android:padding="5dp"
+            android:text="23°C"
+            android:textColor="@color/dark_grey"
+            android:textSize="50sp" />
+
+        <TextView
+            android:id="@+id/city"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/temperature"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:fontFamily="@font/press_start"
+            android:gravity="center_horizontal"
+            android:padding="5dp"
+            android:text="California, USA"
+            android:textColor="@color/dark_grey"
+            android:textSize="20sp" />
+
+        <ImageView
+            android:id="@+id/weather_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/city"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/sunny" />
+        <TextView
+            android:id="@+id/weather_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/weather_image"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:fontFamily="@font/press_start"
+            android:gravity="center_horizontal"
+            android:padding="0dp"
+            android:text="Mostly Sunny"
+            android:textColor="@color/dark_grey"
+            android:textSize="13sp" />
+
+
+
+    </RelativeLayout>
+
+</RelativeLayout>
