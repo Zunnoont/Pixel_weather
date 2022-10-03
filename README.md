@@ -8,4 +8,8 @@ All backgrounds, animations and sprites creating by myself using drawing softwar
 
 # Screenshots!
 
-[Pixel_weather_image1png](https://user-images.githubusercontent.com/78951403/193514274-e5e08f62-3008-4c0c-9e4a-b65de34bcb03.png)
+<img src="https://user-images.githubusercontent.com/78951403/193533092-2bd2f592-bb18-4c33-bcd2-2b939dd53247.png" data-canonical-src="https://user-images.githubusercontent.com/78951403/193533092-2bd2f592-bb18-4c33-bcd2-2b939dd53247.png" width="200" height="400" />
+
+
+<img src="https://user-images.githubusercontent.com/78951403/193533425-be77b3c5-06bf-4670-8941-de19446fdd86.png" data-canonical-src="https://user-images.githubusercontent.com/78951403/193533425-be77b3c5-06bf-4670-8941-de19446fdd86.png" width="200" height="400" />
+
