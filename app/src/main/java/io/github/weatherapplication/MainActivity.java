@@ -52,6 +52,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.time.chrono.MinguoChronology;
 import java.util.List;
 import java.util.Locale;
@@ -92,19 +93,13 @@ public class MainActivity extends AppCompatActivity {
 
         enter_city.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                try {
-                    JSONObject json = parse_json();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
                 InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
                 if(imm.isAcceptingText()) { // verify if the soft keyboard is open
                     imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
                 }
                 get_longitude_and_latitude(enter_city.getText().toString());
+                System.out.println();
                 get_weather_info(latitude, longitude);
                 return true;
             }
@@ -127,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("IO Exception");
+                System.out.println("IO Exception1");
                 System.out.println(new File(".").getAbsoluteFile());
             } catch (ParseException e) {
                 System.out.println("ParseException");
@@ -181,8 +176,9 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
                         List<Address> address = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                        city_and_country.setText(address.get(0).getAddressLine(0) + ", " + address.get(0).getCountryName());
+                        city_and_country.setText(address.get(0).getLocality() + ", " + address.get(0).getCountryName());
                         user_city = address.get(0).getLocality();
+                        get_weather_info(String.valueOf(address.get(0).getLatitude()), String.valueOf(address.get(0).getLongitude()));
                     } catch (IOException e) {
                         e.printStackTrace();
                         System.out.println(e.toString());
@@ -199,20 +195,21 @@ public class MainActivity extends AppCompatActivity {
             temperature.setTextColor(Color.parseColor("#202020"));
             city_and_country.setTextColor(Color.parseColor("#202020"));
             weather_status.setTextColor(Color.parseColor("#202020"));
-
+            enter_city.setTextColor(Color.parseColor("#202020"));
         }
         else if(weather_text.contains("cloud") == true || weather_text.equals("Overcast")) {
             weather_image.setImageResource(R.drawable.cloud_icon_cloudy);
             gif.setVisibility(View.GONE);
             background.setVisibility(View.VISIBLE);
         }
-        else if(weather_text.contains("clear") || weather_text.equals("Sunny")) {
+        else if(weather_text.contains("Clear") || weather_text.contains("Sunny")) {
             weather_image.setImageResource(R.drawable.sunny);
             gif.setVisibility(View.VISIBLE);
             background.setVisibility(View.GONE);
             temperature.setTextColor(Color.WHITE);
             city_and_country.setTextColor(Color.WHITE);
             weather_status.setTextColor(Color.WHITE);
+            enter_city.setTextColor(Color.WHITE);
             gif.setImageResource(R.drawable.wallpaper_clear_night);
         }
         else if(weather_text.contains("rain")) {
@@ -223,21 +220,26 @@ public class MainActivity extends AppCompatActivity {
             temperature.setTextColor(Color.parseColor("#202020"));
             city_and_country.setTextColor(Color.parseColor("#202020"));
             weather_status.setTextColor(Color.parseColor("#202020"));
+            enter_city.setTextColor(Color.parseColor("#202020"));
         }
     }
     private void get_longitude_and_latitude(String city) {
-        String url = "http://api.openweathermap.org/geo/1.0/direct?q=" + city + "n&limit=5&appid=d90f2f3bc5c53cf687458bd3f68904bb";
+        String url = "http://api.openweathermap.org/geo/1.0/direct?q=" + city + "&limit=5&appid=d90f2f3bc5c53cf687458bd3f68904bb";
         RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
         System.out.println("Hello here!!");
+        System.out.println(city);
 
         JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
-                        // do something
+                        System.out.println("Are you over here? onresponse");
                         try {
-                            latitude = response.getJSONObject(0).getString("lat");
-                            longitude = response.getJSONObject(0).getString("lon");
+                            double lat = response.getJSONObject(0).getDouble("lat");
+                            double lon = response.getJSONObject(0).getDouble("lon");
+                            latitude = String.valueOf(lat);
+                            longitude = String.valueOf(lon);
+                            System.out.println("Lat " + latitude + " Lon " + longitude);
                         }
                         catch(JSONException e) {
                             e.printStackTrace();
@@ -257,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void get_weather_info(String lat, String lon) {
         System.out.println("Hello!");
-        String url = "https://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon +" &appid=d90f2f3bc5c53cf687458bd3f68904bb";
+        String url = "https://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon +"&units=metric&appid=d90f2f3bc5c53cf687458bd3f68904bb";
         RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
         System.out.println("Hello here!!");
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -267,14 +269,15 @@ public class MainActivity extends AppCompatActivity {
                         // do something
                         try {
                             String curr_temp = response.getJSONObject("main").getString("temp");
+                            curr_temp = curr_temp.substring(0, curr_temp.length() - 1);
                             String temp_degrees = curr_temp + "°C";
-                            String weather_status_in_city = response.getJSONObject("weather").getString("description");
-                            String locality = response.getJSONObject("location").getString("name") + ", " + response.getJSONObject("location").getString("country");
+                            String weather_status_in_city = response.getJSONArray("weather").getJSONObject(0).getString("description");
+                            weather_status_in_city = weather_status_in_city.substring(0, 1).toUpperCase() + weather_status_in_city.substring(1);
+                            String locality = response.getString("name") + "," + response.getJSONObject("sys").getString("country");
                             temperature.setText(temp_degrees);
                             weather_status.setText(weather_status_in_city);
                             city_and_country.setText(locality);
                             update_weather_image(weather_status_in_city);
-
                         }
                         catch(JSONException e) {
                             e.printStackTrace();
