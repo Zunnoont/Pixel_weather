@@ -91,6 +91,8 @@ public class MainActivity extends AppCompatActivity {
         background.setScaleType(ImageView.ScaleType.FIT_XY);
         gif.setScaleType(ImageView.ScaleType.FIT_XY);
 
+        // Set on action listener to listen for when user is finished typing in
+        // next city to get information on.
         enter_city.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
@@ -100,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 get_longitude_and_latitude(enter_city.getText().toString());
                 System.out.println();
-                get_weather_info(latitude, longitude);
                 return true;
             }
             return false;
@@ -108,36 +109,13 @@ public class MainActivity extends AppCompatActivity {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // You can use the API that requires the permission.
             get_location(fusedLocationClient);
-            try {
-                JSONObject json_data = parse_australian_suburbs();
-                if(json_data.has(user_city)) {
-                    get_longitude_and_latitude(enter_city.getText().toString());
-                    get_weather_info(latitude, longitude);
-                }
-                else {
-                    System.out.println("whats up");
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("IO Exception1");
-                System.out.println(new File(".").getAbsoluteFile());
-            } catch (ParseException e) {
-                System.out.println("ParseException");
-
-                e.printStackTrace();
-            }
-            // get_weather_info("Perth");
         }
         else {
             ActivityCompat.requestPermissions(MainActivity.this,
                     new String[] {Manifest.permission.ACCESS_COARSE_LOCATION},
                     22);
         }
-
-
     }
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
@@ -178,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
                         List<Address> address = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
                         city_and_country.setText(address.get(0).getLocality() + ", " + address.get(0).getCountryName());
                         user_city = address.get(0).getLocality();
-                        get_weather_info(String.valueOf(address.get(0).getLatitude()), String.valueOf(address.get(0).getLongitude()));
+                        get_weather_info(String.valueOf(address.get(0).getLatitude()), String.valueOf(address.get(0).getLongitude()), true);
                     } catch (IOException e) {
                         e.printStackTrace();
                         System.out.println(e.toString());
@@ -226,30 +204,30 @@ public class MainActivity extends AppCompatActivity {
     private void get_longitude_and_latitude(String city) {
         String url = "http://api.openweathermap.org/geo/1.0/direct?q=" + city + "&limit=5&appid=d90f2f3bc5c53cf687458bd3f68904bb";
         RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
-        System.out.println("Hello here!!");
-        System.out.println(city);
 
         JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
-                        System.out.println("Are you over here? onresponse");
                         try {
                             double lat = response.getJSONObject(0).getDouble("lat");
                             double lon = response.getJSONObject(0).getDouble("lon");
-                            latitude = String.valueOf(lat);
-                            longitude = String.valueOf(lon);
-                            System.out.println("Lat " + latitude + " Lon " + longitude);
+                            setLatitude(String.valueOf(lat));
+                            setLongitude(String.valueOf(lon));
+
+                            city_and_country.setText(response.getJSONObject(0).getString("name") + ", " + response.getJSONObject(0).getString("country"));
+                            get_weather_info(latitude, longitude, false);
                         }
                         catch(JSONException e) {
                             e.printStackTrace();
+                            Toast.makeText(MainActivity.this, "Error getting long and lat from city", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 System.out.println("something went wrong ;(, Error:" + error.toString());
-                Toast.makeText(MainActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Error getting long and lat from city", Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -257,11 +235,9 @@ public class MainActivity extends AppCompatActivity {
         queue.add(request);
 
     }
-    private void get_weather_info(String lat, String lon) {
-        System.out.println("Hello!");
+    private void get_weather_info(String lat, String lon, boolean isInitialising) {
         String url = "https://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon +"&units=metric&appid=d90f2f3bc5c53cf687458bd3f68904bb";
         RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
-        System.out.println("Hello here!!");
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -276,19 +252,21 @@ public class MainActivity extends AppCompatActivity {
                             String locality = response.getString("name") + "," + response.getJSONObject("sys").getString("country");
                             temperature.setText(temp_degrees);
                             weather_status.setText(weather_status_in_city);
-                            city_and_country.setText(locality);
+                            if(isInitialising == true) {
+                                city_and_country.setText(locality);
+                            }
+
                             update_weather_image(weather_status_in_city);
                         }
                         catch(JSONException e) {
                             e.printStackTrace();
+                            Toast.makeText(MainActivity.this, "Some kind of error", Toast.LENGTH_SHORT).show();
                         }
                     }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                System.out.println("something went wrong ;(, Error:" + error.toString());
-                Toast.makeText(MainActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
-
+                Toast.makeText(MainActivity.this, "Error occurred: " + error.toString() + " lat:" + lat + " lon:" + lon , Toast.LENGTH_SHORT).show();
             }
         });
         request.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
@@ -318,4 +296,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+    public void setLongitude(String longitude) {
+        this.longitude = longitude;
+    }
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
+    }
+
 }
